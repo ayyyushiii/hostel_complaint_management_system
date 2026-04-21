@@ -9,5 +9,6 @@
     "[java]": {
         "editor.defaultFormatter": "redhat.java",
         "editor.formatOnSave": true
-    }
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

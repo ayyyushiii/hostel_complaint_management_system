@@ -1,8 +1,9 @@
 package com.hostel.controller;
 
-import com.hostel.dao.ComplaintDAO;
 import com.hostel.dao.TimelineDAO;
 import com.hostel.model.ComplaintTimeline;
+import com.hostel.service.ComplaintModifier;
+import com.hostel.service.ComplaintModifierFactory;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,8 +19,8 @@ import java.io.IOException;
 @WebServlet("/admin/close-complaint")
 public class CloseComplaintServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private ComplaintDAO complaintDAO = new ComplaintDAO();
     private TimelineDAO timelineDAO = new TimelineDAO();
+    private ComplaintModifier closeModifier = ComplaintModifierFactory.getModifier("close");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,15 +42,19 @@ public class CloseComplaintServlet extends HttpServlet {
             int complaintId = Integer.parseInt(complaintIdStr);
             int adminId = (Integer) session.getAttribute("userId");
 
-            // Close the complaint
-            if (complaintDAO.closeComplaint(complaintId)) {
+            // Close the complaint via modifier
+            boolean closed = false;
+            if (closeModifier != null) {
+                closed = closeModifier.apply(complaintId, adminId, null);
+            }
+
+            if (closed) {
                 // Add timeline entry
                 ComplaintTimeline timeline = new ComplaintTimeline(
-                    complaintId,
-                    "Complaint Closed",
-                    adminId,
-                    "Complaint closed by admin"
-                );
+                        complaintId,
+                        "Complaint Closed",
+                        adminId,
+                        "Complaint closed by admin");
                 timelineDAO.addTimelineEntry(timeline);
             }
 

@@ -1,4 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.hostel.category.ComplaintCategory" %>
 <jsp:include page="../includes/header.jsp" />
 <title>Submit Complaint - Student</title>
 </head>
@@ -25,6 +27,11 @@
                         <%
                             String error = (String) request.getAttribute("error");
                             String success = (String) request.getAttribute("success");
+                            String selectedCategory = request.getParameter("category");
+                            String roomNumber = request.getParameter("roomNumber");
+                            String description = request.getParameter("description");
+                            List<ComplaintCategory> categories =
+                                (List<ComplaintCategory>) request.getAttribute("categories");
                         %>
 
                         <% if (error != null) { %>
@@ -48,12 +55,12 @@
                                     <span class="input-group-text bg-light text-muted"><i class="fas fa-tag"></i></span>
                                     <select class="form-select" id="category" name="category" required>
                                         <option value="">-- Select Category --</option>
-                                        <option value="ELECTRICAL">Electrical</option>
-                                        <option value="PLUMBING">Plumbing</option>
-                                        <option value="INTERNET">Internet</option>
-                                        <option value="CLEANLINESS">Cleanliness</option>
-                                        <option value="SECURITY">Security</option>
-                                        <option value="FURNITURE">Furniture</option>
+                                        <% for (ComplaintCategory category : categories) { %>
+                                            <option value="<%= category.getCode() %>"
+                                                <%= category.getCode().equals(selectedCategory) ? "selected" : "" %>>
+                                                <%= category.getDisplayName() %>
+                                            </option>
+                                        <% } %>
                                     </select>
                                 </div>
                             </div>
@@ -62,13 +69,13 @@
                                 <label for="roomNumber" class="form-label fw-bold small text-muted">Room Number</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted"><i class="fas fa-door-open"></i></span>
-                                    <input type="text" class="form-control" id="roomNumber" name="roomNumber" placeholder="e.g. A-101" required>
+                                    <input type="text" class="form-control" id="roomNumber" name="roomNumber" placeholder="e.g. A-101" value="<%= roomNumber != null ? roomNumber : "" %>" required>
                                 </div>
                             </div>
 
                             <div class="mb-4">
                                 <label for="description" class="form-label fw-bold small text-muted">Description</label>
-                                <textarea class="form-control" id="description" name="description" rows="5" placeholder="Describe the problem in detail..." required></textarea>
+                                <textarea class="form-control" id="description" name="description" rows="5" placeholder="Describe the problem in detail..." required><%= description != null ? description : "" %></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm mt-2">

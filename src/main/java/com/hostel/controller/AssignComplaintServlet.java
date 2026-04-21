@@ -6,6 +6,8 @@ import com.hostel.dao.UserDAO;
 import com.hostel.model.Complaint;
 import com.hostel.model.ComplaintTimeline;
 import com.hostel.model.User;
+import com.hostel.service.ComplaintModifier;
+import com.hostel.service.ComplaintModifierFactory;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -24,6 +26,7 @@ public class AssignComplaintServlet extends HttpServlet {
     private ComplaintDAO complaintDAO = new ComplaintDAO();
     private UserDAO userDAO = new UserDAO();
     private TimelineDAO timelineDAO = new TimelineDAO();
+    private ComplaintModifier assignModifier = ComplaintModifierFactory.getModifier("assign");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -84,16 +87,23 @@ public class AssignComplaintServlet extends HttpServlet {
             int complaintId = Integer.parseInt(complaintIdStr);
             int staffId = Integer.parseInt(staffIdStr);
 
-            if (complaintDAO.assignComplaintToStaff(complaintId, staffId)) {
+            java.util.Map<String, Object> params = new java.util.HashMap<>();
+            params.put("staffId", staffId);
+
+            boolean assigned = false;
+            if (assignModifier != null) {
+                assigned = assignModifier.apply(complaintId, adminId, params);
+            }
+
+            if (assigned) {
                 // Add timeline entry
                 User staff = userDAO.getUserById(staffId);
                 String action = "Assigned to Staff: " + (staff != null ? staff.getName() : "Staff ID: " + staffId);
                 ComplaintTimeline timeline = new ComplaintTimeline(
-                    complaintId,
-                    action,
-                    adminId,
-                    "Complaint assigned by admin"
-                );
+                        complaintId,
+                        action,
+                        adminId,
+                        "Complaint assigned by admin");
                 timelineDAO.addTimelineEntry(timeline);
 
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");

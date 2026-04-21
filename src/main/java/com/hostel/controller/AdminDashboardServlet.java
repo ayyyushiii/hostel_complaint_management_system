@@ -1,5 +1,6 @@
 package com.hostel.controller;
 
+import com.hostel.category.ComplaintCategoryFactory;
 import com.hostel.dao.ComplaintDAO;
 import com.hostel.model.Complaint;
 import javax.servlet.ServletException;
@@ -19,6 +20,7 @@ import java.util.List;
 public class AdminDashboardServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ComplaintDAO complaintDAO = new ComplaintDAO();
+    private ComplaintCategoryFactory complaintCategoryFactory = new ComplaintCategoryFactory();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,6 +36,7 @@ public class AdminDashboardServlet extends HttpServlet {
         List<Complaint> complaints = complaintDAO.getAllComplaints();
 
         request.setAttribute("complaints", complaints);
+        request.setAttribute("categories", complaintCategoryFactory.getAvailableCategories());
         request.getRequestDispatcher("/views/admin/adminDashboard.jsp").forward(request, response);
     }
 }

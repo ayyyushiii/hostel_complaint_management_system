@@ -1,5 +1,6 @@
 package com.hostel.controller;
 
+import com.hostel.category.ComplaintCategoryFactory;
 import com.hostel.dao.ComplaintDAO;
 import com.hostel.dao.TimelineDAO;
 import com.hostel.model.Complaint;
@@ -21,6 +22,7 @@ public class ComplaintServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ComplaintDAO complaintDAO = new ComplaintDAO();
     private TimelineDAO timelineDAO = new TimelineDAO();
+    private ComplaintCategoryFactory complaintCategoryFactory = new ComplaintCategoryFactory();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,6 +34,7 @@ public class ComplaintServlet extends HttpServlet {
             return;
         }
 
+        setCategoryOptions(request);
         request.getRequestDispatcher("/views/student/submitComplaint.jsp").forward(request, response);
     }
 
@@ -55,11 +58,24 @@ public class ComplaintServlet extends HttpServlet {
             description == null || description.trim().isEmpty() ||
             roomNumber == null || roomNumber.trim().isEmpty()) {
             request.setAttribute("error", "All fields are required");
+            setCategoryOptions(request);
             request.getRequestDispatcher("/views/student/submitComplaint.jsp").forward(request, response);
             return;
         }
 
-        Complaint complaint = new Complaint(studentId, category, description, roomNumber);
+        if (!complaintCategoryFactory.supports(category)) {
+            request.setAttribute("error", "Please select a valid complaint category");
+            setCategoryOptions(request);
+            request.getRequestDispatcher("/views/student/submitComplaint.jsp").forward(request, response);
+            return;
+        }
+
+        Complaint complaint = complaintCategoryFactory.createComplaint(
+            category,
+            studentId,
+            description,
+            roomNumber
+        );
         int complaintId = complaintDAO.submitComplaint(complaint);
 
         if (complaintId > 0) {
@@ -73,10 +89,16 @@ public class ComplaintServlet extends HttpServlet {
             timelineDAO.addTimelineEntry(timeline);
 
             request.setAttribute("success", "Complaint submitted successfully");
+            setCategoryOptions(request);
             request.getRequestDispatcher("/views/student/submitComplaint.jsp").forward(request, response);
         } else {
             request.setAttribute("error", "Failed to submit complaint");
+            setCategoryOptions(request);
             request.getRequestDispatcher("/views/student/submitComplaint.jsp").forward(request, response);
         }
+    }
+
+    private void setCategoryOptions(HttpServletRequest request) {
+        request.setAttribute("categories", complaintCategoryFactory.getAvailableCategories());
     }
 }

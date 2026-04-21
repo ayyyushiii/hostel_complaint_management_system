@@ -4,6 +4,8 @@ import com.hostel.dao.ComplaintDAO;
 import com.hostel.dao.TimelineDAO;
 import com.hostel.model.Complaint;
 import com.hostel.model.ComplaintTimeline;
+import com.hostel.service.ComplaintModifier;
+import com.hostel.service.ComplaintModifierFactory;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,6 +23,7 @@ public class UpdateStatusServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ComplaintDAO complaintDAO = new ComplaintDAO();
     private TimelineDAO timelineDAO = new TimelineDAO();
+    private ComplaintModifier statusModifier = ComplaintModifierFactory.getModifier("update_status");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -78,19 +81,23 @@ public class UpdateStatusServlet extends HttpServlet {
         try {
             int complaintId = Integer.parseInt(complaintIdStr);
 
-            if (complaintDAO.updateComplaintStatus(complaintId, status)) {
-                if (notes != null && !notes.trim().isEmpty()) {
-                    complaintDAO.updateComplaintNotes(complaintId, notes);
-                }
+            java.util.Map<String, Object> params = new java.util.HashMap<>();
+            params.put("status", status);
+            params.put("notes", notes);
 
+            boolean updated = false;
+            if (statusModifier != null) {
+                updated = statusModifier.apply(complaintId, staffId, params);
+            }
+
+            if (updated) {
                 // Add timeline entry
                 String action = "Status Updated to " + status;
                 ComplaintTimeline timeline = new ComplaintTimeline(
-                    complaintId,
-                    action,
-                    staffId,
-                    notes
-                );
+                        complaintId,
+                        action,
+                        staffId,
+                        notes);
                 timelineDAO.addTimelineEntry(timeline);
 
                 request.setAttribute("success", "Complaint updated successfully");

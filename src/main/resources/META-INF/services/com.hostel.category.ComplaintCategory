@@ -1,0 +1,7 @@
+com.hostel.category.impl.ElectricalCategory
+com.hostel.category.impl.PlumbingCategory
+com.hostel.category.impl.InternetCategory
+com.hostel.category.impl.CleanlinessCategory
+com.hostel.category.impl.SecurityCategory
+com.hostel.category.impl.FurnitureCategory
+com.hostel.category.impl.WaterLeakCategory

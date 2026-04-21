@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.List" %>
+<%@ page import="com.hostel.category.ComplaintCategory" %>
 <%@ page import="com.hostel.model.Complaint" %>
 <jsp:include page="../includes/header.jsp" />
 <title>Admin Dashboard - Hostel Complaint Management</title>
@@ -35,6 +36,9 @@
             
             <%
                 List<Complaint> complaints = (List<Complaint>) request.getAttribute("complaints");
+                List<ComplaintCategory> categories = (List<ComplaintCategory>) request.getAttribute("categories");
+                String selectedCategory = (String) request.getAttribute("selectedCategory");
+                String selectedStatus = (String) request.getAttribute("selectedStatus");
                 int total = complaints != null ? complaints.size() : 0;
                 int submitted = 0, assigned = 0, inProgress = 0, closed = 0;
                 
@@ -101,23 +105,23 @@
                         <label class="form-label small fw-bold">Category</label>
                         <select name="category" class="form-select">
                             <option value="">All Categories</option>
-                            <option value="ELECTRICAL">Electrical</option>
-                            <option value="PLUMBING">Plumbing</option>
-                            <option value="INTERNET">Internet</option>
-                            <option value="CLEANLINESS">Cleanliness</option>
-                            <option value="SECURITY">Security</option>
-                            <option value="FURNITURE">Furniture</option>
+                            <% for (ComplaintCategory category : categories) { %>
+                                <option value="<%= category.getCode() %>"
+                                    <%= category.getCode().equals(selectedCategory) ? "selected" : "" %>>
+                                    <%= category.getDisplayName() %>
+                                </option>
+                            <% } %>
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Status</label>
                         <select name="status" class="form-select">
-                            <option value="">All Status</option>
-                            <option value="SUBMITTED">Submitted</option>
-                            <option value="ASSIGNED">Assigned</option>
-                            <option value="IN_PROGRESS">In Progress</option>
-                            <option value="RESOLVED">Resolved</option>
-                            <option value="CLOSED">Closed</option>
+                            <option value="" <%= selectedStatus == null || selectedStatus.isEmpty() ? "selected" : "" %>>All Status</option>
+                            <option value="SUBMITTED" <%= "SUBMITTED".equals(selectedStatus) ? "selected" : "" %>>Submitted</option>
+                            <option value="ASSIGNED" <%= "ASSIGNED".equals(selectedStatus) ? "selected" : "" %>>Assigned</option>
+                            <option value="IN_PROGRESS" <%= "IN_PROGRESS".equals(selectedStatus) ? "selected" : "" %>>In Progress</option>
+                            <option value="RESOLVED" <%= "RESOLVED".equals(selectedStatus) ? "selected" : "" %>>Resolved</option>
+                            <option value="CLOSED" <%= "CLOSED".equals(selectedStatus) ? "selected" : "" %>>Closed</option>
                         </select>
                     </div>
                     <div class="col-md-4">
